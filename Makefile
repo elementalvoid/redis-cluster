@@ -22,8 +22,7 @@ SVC := manifests/${SHORT_NAME}-sentinel-service.yaml
 SENTINEL_RC := manifests/${SHORT_NAME}-sentinel-rc.yaml
 
 # Docker image name
-#IMAGE := deis/${SHORT_NAME}:${VERSION}
-IMAGE := deis/${SHORT_NAME}:v0.0.5
+IMAGE := deis/${SHORT_NAME}:${VERSION}
 
 all: docker-build docker-push
 
