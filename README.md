@@ -1,6 +1,6 @@
 # Redis Cluster
 
-Example todo application with a Redis backend.
+Highly available Redis cluster with multiple sentinels and standbys.
 
 ## Usage
 
