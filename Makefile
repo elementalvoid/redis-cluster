@@ -12,8 +12,10 @@ VERSION := 0.0.1-$(shell date "+%Y%m%d%H%M%S")
 BINDIR := ./rootfs
 
 # Legacy support for DEV_REGISTRY, plus new support for DEIS_REGISTRY.
-DEV_REGISTRY ?= $(eval docker-machine ip deis):5000
-DEIS_REGISTY ?= ${DEV_REGISTRY}
+#DEV_REGISTRY ?= $(eval docker-machine ip deis):5000
+#DEIS_REGISTY ?= ${DEV_REGISTRY}
+THE_REGISTRY = $(REGISTRY)
+#THE_REGISTRY ?= ${THE_REGISTRY:-"172.17.4.200:5000"}
 
 # Kubernetes-specific information for RC, Service, and Image.
 MASTER := manifests/${SHORT_NAME}-master.yaml
@@ -22,7 +24,8 @@ SVC := manifests/${SHORT_NAME}-sentinel-service.yaml
 SENTINEL_RC := manifests/${SHORT_NAME}-sentinel-rc.yaml
 
 # Docker image name
-IMAGE := deis/${SHORT_NAME}:${VERSION}
+#IMAGE := deis/${SHORT_NAME}:${VERSION}
+IMAGE := ${THE_REGISTRY}/${SHORT_NAME}:${VERSION}
 
 all: docker-build docker-push
 

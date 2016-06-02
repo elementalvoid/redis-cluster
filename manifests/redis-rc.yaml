@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: "deis/redis:v0.0.5"
+        image: "tangfeixiong/redis:0.0.1-20160602225702"
         ports:
         - containerPort: 6379
         resources:
