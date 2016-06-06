@@ -15,7 +15,7 @@ BINDIR := ./rootfs
 #DEV_REGISTRY ?= $(eval docker-machine ip deis):5000
 #DEIS_REGISTY ?= ${DEV_REGISTRY}
 THE_REGISTRY = $(REGISTRY)
-#THE_REGISTRY ?= ${THE_REGISTRY:-"172.17.4.200:5000"}
+#THE_REGISTRY ?= $(shell echo ${THE_REGISTRY:-"172.17.4.200:5000"})
 
 # Kubernetes-specific information for RC, Service, and Image.
 MASTER := manifests/${SHORT_NAME}-master.yaml
