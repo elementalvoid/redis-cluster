@@ -2,47 +2,83 @@
 
 Highly available Redis cluster with multiple sentinels and standbys.
 
+_在Kubernetes上创建高可用Redis容器集群_
+
+* 主从模式（Master－Salves）的标准Redis服务集群，原Master不可用后，使用投票机制从Slaves中产生新的Master
+
+* 使用Sentinel多主模式（active－active）提供Redis Master发现
+
 ## Usage
 
 Until better documentation arrives, see the `Makefile` for useful targets.
 
-### Guide
+## Guide
 
-* Install Redis Service
+_部署摘要_
 
-[vagrant@localhost redis-cluster]$ ls
+### Install Redis
 
-CHANGELOG.md  CONTRIBUTING.md  DCO  _docs  glide.yaml  LICENSE  MAINTAINERS.md  Makefile  manifests  README.md  rootfs  _tests
+_安装Redis和Sentinel_
 
-[vagrant@localhost redis-cluster]$ ls manifests/
+* Install K8s POD of Redis and Sentinel
 
-redis-master.yaml  redis-rc.yaml  redis-sentinel-rc.yaml  redis-sentinel-service.yaml
+__安装Redis＋Sentinel POD__
 
-[vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig create -f manifests/redis-master.yaml 
+    [vagrant@localhost redis-cluster]$ ls
 
-pod "redis-master" created
+    CHANGELOG.md  CONTRIBUTING.md  DCO  _docs  glide.yaml  LICENSE  MAINTAINERS.md  Makefile  manifests  README.md  rootfs  _tests
 
-[vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig get pods
+    [vagrant@localhost redis-cluster]$ ls manifests/
 
-NAME                       READY     STATUS    RESTARTS   AGE
+    redis-master.yaml  redis-rc.yaml  redis-sentinel-rc.yaml  redis-sentinel-service.yaml
 
-redis-master               2/2       Running   0          10s
+创建
 
-[vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig create -f manifests/redis-sentinel-service.yaml 
+    [vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig create -f manifests/redis-master.yaml 
 
-service "redis-sentinel" created
+    pod "redis-master" created
 
-[vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig get service
-NAME             CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
-kubernetes       10.3.0.1     <none>        443/TCP     23d
-redis-sentinel   10.3.0.206   <none>        26379/TCP   2m
+查看
 
-* Internal validation
+    [vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig get pods
+
+    NAME                       READY     STATUS    RESTARTS   AGE
+
+    redis-master               2/2       Running   0          10s
+
+* Expose Sentnel service into cluster
+
+__绑定Sentinel服务到集群网络和集群VIP（Virtual IP）__
+ 
+    [vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig create -f manifests/redis-sentinel-service.yaml 
+
+    service "redis-sentinel" created
+
+查看Sentinel绑定的集群网络
 
     [vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig get ep
+
     NAME             ENDPOINTS          AGE
+
     kubernetes       172.17.4.50:443    23d
+
     redis-sentinel   172.17.0.8:26379   11s
+
+查看Sentinel绑定的集群VIP（在集群每台宿主机的IPTables表配置DNAT和Port－Forward的地址和端口）
+
+    [vagrant@localhost redis-cluster]$ kubectl --kubeconfig=/data/src/github.com/openshift/origin/kubeconfig get service
+
+    NAME             CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
+
+    kubernetes       10.3.0.1     <none>        443/TCP     23d
+
+    redis-sentinel   10.3.0.206   <none>        26379/TCP   2m
+
+* Validation of Internal cluster of Redis and Sentinel
+
+__验证Redis和Sentinel在集群内的服务能力__
+
+必须在集群网络（container networking，如flannel）内操作验证，以应用程序的方式验证可以采用在集群内运行run－once POD去执行命令
 
     [vagrant@localhost redis-cluster]$ echo -e "INFO\r\nQUIT\r\n" | curl telnet://172.17.0.8:26379
     $595
