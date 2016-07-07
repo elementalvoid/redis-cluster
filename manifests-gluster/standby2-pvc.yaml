@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    qingyuanos.com/catalog-by: '{"version": "v1alpha", "lib": "https://github.com/qingyuancloud/harpoon", "documentation": "https://docs.openshift.org/latest/install_config/storage_examples/gluster_example.html"}'
+  labels:
+    app: redis
+    heritage: qingyuancloud
+    name: redis-standby2
+    project: openshift.org
+    role: standby
+  name: standby2-pvc
+spec:
+  accessModes:
+  - ReadOnlyMany
+  - ReadWriteMany
+  - ReadWriteOnce
+  resources:
+    limits:
+      storage: 5Gi
+    requests:
+      storage: 100Mi
+  volumeName: standby2-pv

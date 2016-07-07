@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    heritage: deis
+    name: redis
+    redis-sentinel: "true"
+    role: master
+    bootstrap: "true"
+  name: redis-master
+spec:
+  containers:
+    - name: master
+      image: "tangfeixiong/redis:0.0.1-20160602233602"
+      env:
+        - name: MASTER
+          value: "true"
+        - name: DEBUG
+          value: "1"
+      ports:
+        - containerPort: 6379
+      resources:
+        limits:
+          cpu: "0.1"
+      volumeMounts:
+        - mountPath: /redis-master-data
+          name: data
+          # name: master-gluster
+          # name: master-host
+          # name: master-nfs
+          # name: master-pvc
+    - name: sentinel
+      image: "tangfeixiong/redis:0.0.1-20160602233602"
+      env:
+        - name: SENTINEL
+          value: "true"
+        - name: DEBUG
+          value: "1"
+      ports:
+        - containerPort: 26379
+  volumes:
+  - emptyDir: {}
+    name: data
+  # - glusterfs:
+  #     endpoints: gluster-endpoints
+  #     path: /glustermnt/redis-master-data
+  #     readOnly: false
+  #   name: master-gluster
+  # - hostPath:
+  #     path: /tmp/redis-master-data
+  #   name: master-host
+  # - name: master-nfs
+  #   nfs:
+  #     path: /nfsmnt/redis-master-data
+  #     readOnly: false
+  #     server: 172.17.0.2
+  # - name: master-pvc
+  #   persistentVolumeClaim:
+  #     claimName: master-pvc
+      

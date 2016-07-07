@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: redis
+  labels:
+    heritage: deis
+spec:
+  replicas: 1
+  selector:
+    name: redis
+  template:
+    metadata:
+      labels:
+        name: redis
+    spec:
+      containers:
+      - name: redis
+        image: "tangfeixiong/redis:0.0.1-20160602233602"
+        ports:
+        - containerPort: 6379
+        resources:
+          limits:
+            cpu: "0.1"
+        volumeMounts:
+        - mountPath: /redis-master-data
+          # name: data
+          name: standby-gluster
+          # name: standby-claim
+          # name: standby-host
+          # name: standby-nfs
+      volumes:
+      - name: data
+        emptyDir: {}
+      - glusterfs:
+          endpoints: gluster-endpoints
+          path: /glustermnt/redis-master-data
+          readOnly: false
+        name: standby-gluster
+      - hostPath:
+          path: /tmp/redis-master-data
+        name: standby-host
+      - name: standby-claim
+        persistentVolumeClaim:
+          claimName: standby-pvc
+      # - name: standby-nfs
+      #   nfs:
+      #     path: /nfsmnt/redis-master-data
+      #     readOnly: false
+      #     server: 172.17.0.2
+
